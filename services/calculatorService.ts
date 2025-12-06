@@ -89,11 +89,14 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
         const breakEven = isCall 
             ? (isLong ? strike + premium : strike + premium) 
             : (isLong ? strike - premium : strike - premium);
+            
+        const strategySetup = `${isLong ? '買入 (Buy)' : '賣出 (Sell)'} 行權價 $${strike} 的 ${isCall ? '看漲期權 (Call)' : '看跌期權 (Put)'}，${isLong ? '支付' : '收取'}權利金 $${premium}。`;
 
         return {
           chartData: generateChartData(strike || price, 20, pnlFunc),
           scenarios: generateScenarios(price, pnlFunc),
-          summary: { maxProfit, maxLoss, breakEven: `$${breakEven.toFixed(2)}` }
+          summary: { maxProfit, maxLoss, breakEven: `$${breakEven.toFixed(2)}` },
+          strategySetup
         };
       }
     };
@@ -134,10 +137,13 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
         const netCost = (longPrem - shortPrem) * 100;
         const maxProfit = isBull && isCall ? fmt((shortStrike - longStrike) * 100 - netCost) : '計算中'; 
         
+        const strategySetup = `1. 買入 (Buy) $${longStrike} ${isCall ? 'Call' : 'Put'}，支付 $${longPrem}\n2. 賣出 (Sell) $${shortStrike} ${isCall ? 'Call' : 'Put'}，收取 $${shortPrem}\n淨${longPrem > shortPrem ? '成本 (Debit)' : '收入 (Credit)'}: $${Math.abs(longPrem - shortPrem).toFixed(2)}`;
+        
         return {
           chartData: generateChartData(price, 20, pnlFunc),
           scenarios: generateScenarios(price, pnlFunc),
-          summary: { maxProfit: '見圖表', maxLoss: '見圖表', breakEven: '見圖表' }
+          summary: { maxProfit: '見圖表', maxLoss: '見圖表', breakEven: '見圖表' },
+          strategySetup
         };
       }
     };
@@ -167,10 +173,14 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
                 const putPnL = getSingleLegPnL('put', isLong ? 'long' : 'short', putStrike, putPrem, p);
                 return callPnL + putPnL;
             };
+            
+            const strategySetup = `1. ${isLong ? '買入' : '賣出'} $${callStrike} Call (${isLong ? '支付' : '收取'} $${callPrem})\n2. ${isLong ? '買入' : '賣出'} $${putStrike} Put (${isLong ? '支付' : '收取'} $${putPrem})\n總${isLong ? '成本' : '收入'}: $${(callPrem + putPrem).toFixed(2)}`;
+
             return {
                 chartData: generateChartData(price, 30, pnlFunc),
                 scenarios: generateScenarios(price, pnlFunc),
-                summary: { maxProfit: isLong ? '無限' : fmt((callPrem+putPrem)*100), maxLoss: isLong ? fmt(-(callPrem+putPrem)*100) : '無限', breakEven: '雙邊' }
+                summary: { maxProfit: isLong ? '無限' : fmt((callPrem+putPrem)*100), maxLoss: isLong ? fmt(-(callPrem+putPrem)*100) : '無限', breakEven: '雙邊' },
+                strategySetup
             };
         }
     }
@@ -198,10 +208,16 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
                     : getSingleLegPnL('put', 'long', strike, premium, p);
                 return stockPnL + optionPnL;
             };
+            
+            const strategySetup = isCC
+                ? `1. 持有股票 (成本 $${stockCost})\n2. 賣出 $${strike} Call (收取 $${premium})`
+                : `1. 持有股票 (成本 $${stockCost})\n2. 買入 $${strike} Put (支付 $${premium})`;
+
             return {
                 chartData: generateChartData(price, 20, pnlFunc),
                 scenarios: generateScenarios(price, pnlFunc),
-                summary: { maxProfit: '見圖表', maxLoss: '見圖表', breakEven: '見圖表' }
+                summary: { maxProfit: '見圖表', maxLoss: '見圖表', breakEven: '見圖表' },
+                strategySetup
             };
           }
       }
@@ -240,6 +256,8 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
             
             // Max Loss occurs at or below Put Strike: (PutStrike - StockCost - PutPrem + CallPrem) * 100
             const maxLossVal = (putStrike - stockCost - putPrem + callPrem) * 100;
+            
+            const strategySetup = `1. 持有股票 (成本 $${stockCost})\n2. 買入 $${putStrike} Put (保護, 支付 $${putPrem})\n3. 賣出 $${callStrike} Call (抵銷, 收取 $${callPrem})\n淨期權${putPrem > callPrem ? '成本' : '收入'}: $${Math.abs(putPrem - callPrem).toFixed(2)}`;
 
             return {
                 chartData: generateChartData(price, 20, pnlFunc),
@@ -248,7 +266,8 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
                     maxProfit: fmt(maxProfitVal), 
                     maxLoss: fmt(maxLossVal), 
                     breakEven: '見圖表' 
-                }
+                },
+                strategySetup
             };
           }
       }
@@ -284,6 +303,8 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
               
               return leg1 + leg2 + leg3;
           };
+          
+          const strategySetup = `1. 賣出 $${putStrike} Put (收取 $${putPrem})\n2. 買入 $${longCallStrike} Call (支付 $${longCallPrem})\n3. 賣出 $${shortCallStrike} Call (收取 $${shortCallPrem})`;
 
           return {
               chartData: generateChartData(price, 20, pnlFunc),
@@ -292,7 +313,8 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
                   maxProfit: '見圖表', 
                   maxLoss: '見圖表', 
                   breakEven: '見圖表' 
-              }
+              },
+              strategySetup
           };
         }
     }
@@ -344,6 +366,12 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
         const maxLoss = isLong
              ? fmt(-(netPrem * 100))                // Debit
              : fmt(-((width * 100) - (netPrem * 100))); // -(Width - Credit)
+             
+        const outerPut = putInner - width;
+        const outerCall = callInner + width;
+        const strategySetup = isLong 
+          ? `[買方鐵禿鷹 - 賭突破]\n1. 買入 $${putInner} Put, 賣出 $${outerPut} Put\n2. 買入 $${callInner} Call, 賣出 $${outerCall} Call\n支付淨權利金: $${netPrem}`
+          : `[賣方鐵禿鷹 - 收租]\n1. 賣出 $${putInner} Put, 買入 $${outerPut} Put\n2. 賣出 $${callInner} Call, 買入 $${outerCall} Call\n收取淨權利金: $${netPrem}`;
 
         return {
           chartData: generateChartData(price, 30, pnlFunc),
@@ -352,7 +380,8 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
             maxProfit, 
             maxLoss, 
             breakEven: '見圖表' 
-          }
+          },
+          strategySetup
         };
       }
     }
@@ -399,11 +428,18 @@ export const getCalculatorConfig = (strategyId: string): CalculatorConfig | null
         const maxLoss = isLong
              ? fmt(-(netPrem * 100))
              : fmt(-((width * 100) - (netPrem * 100)));
+             
+        const outerPut = center - width;
+        const outerCall = center + width;
+        const strategySetup = isLong
+          ? `[買方鐵蝶式 - 賭突破]\n1. 買入 $${center} Straddle (Call+Put)\n2. 賣出 $${outerPut} Put 與 $${outerCall} Call\n支付淨權利金: $${netPrem}`
+          : `[賣方鐵蝶式 - 收租]\n1. 賣出 $${center} Straddle (Call+Put)\n2. 買入 $${outerPut} Put 與 $${outerCall} Call\n收取淨權利金: $${netPrem}`;
 
         return {
           chartData: generateChartData(center, 30, pnlFunc),
           scenarios: generateScenarios(price, pnlFunc),
-          summary: { maxProfit, maxLoss, breakEven: '見圖表' }
+          summary: { maxProfit, maxLoss, breakEven: '見圖表' },
+          strategySetup
         };
       }
     }

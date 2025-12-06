@@ -60,5 +60,6 @@ export interface CalculatorConfig {
     chartData: ChartDataPoint[];
     scenarios: Scenario[];
     summary: { maxProfit: string; maxLoss: string; breakEven: string };
+    strategySetup?: string; // Detailed description of the constructed trade
   };
 }
