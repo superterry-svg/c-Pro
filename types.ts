@@ -43,6 +43,11 @@ export interface ChatMessage {
 
 // --- Calculator Types ---
 
+export interface CalcOption {
+  label: string;
+  value: number;
+}
+
 export interface CalcParam {
   key: string;
   label: string;
@@ -51,6 +56,7 @@ export interface CalcParam {
   min?: number;
   max?: number;
   suffix?: string;
+  options?: CalcOption[]; // Support for dropdown selection
 }
 
 export interface CalculatorConfig {

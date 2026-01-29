@@ -200,14 +200,28 @@ const StrategyCalculator: React.FC<StrategyCalculatorProps> = ({ strategy }) => 
             {config.params.map(p => (
                 <div key={p.key} className="flex flex-col gap-1">
                     <label className="text-xs text-slate-400 font-medium">{p.label}</label>
-                    <input 
-                        type="number" 
-                        step={p.step || 1}
-                        // Ensure we handle 0 correctly, but allow empty string
-                        value={params[p.key] !== undefined ? params[p.key] : ''}
-                        onChange={(e) => handleParamChange(p.key, e.target.value)}
-                        className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none transition-colors"
-                    />
+                    {p.options ? (
+                         <select
+                            value={params[p.key] !== undefined ? params[p.key] : ''}
+                            onChange={(e) => handleParamChange(p.key, e.target.value)}
+                            className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                         >
+                            {p.options.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                         </select>
+                    ) : (
+                        <input 
+                            type="number" 
+                            step={p.step || 1}
+                            // Ensure we handle 0 correctly, but allow empty string
+                            value={params[p.key] !== undefined ? params[p.key] : ''}
+                            onChange={(e) => handleParamChange(p.key, e.target.value)}
+                            className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                        />
+                    )}
                 </div>
             ))}
         </div>

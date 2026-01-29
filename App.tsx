@@ -22,10 +22,10 @@ const App: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20">
-                OP
+                OM
               </div>
               <span className="text-xl font-bold tracking-tight text-white">
-                OptionStrat <span className="text-blue-500">Pro</span>
+                OptionsMaster <span className="text-blue-500">期權策略大師</span>
               </span>
             </div>
             
